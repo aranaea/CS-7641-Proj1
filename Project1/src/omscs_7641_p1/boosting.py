@@ -20,6 +20,7 @@ def main():
             for n in range(100, 1101, 250):
                 start = time()
                 max_depth = 12 if dataset_name == 'Diamonds' else 5
+                max_depth = 1
                 tree = DecisionTreeClassifier(max_depth=max_depth, random_state=42)
                 clf = AdaBoostClassifier(tree, random_state=42, n_estimators=n, learning_rate=l)
                 clf.fit(train_X, train_Y)

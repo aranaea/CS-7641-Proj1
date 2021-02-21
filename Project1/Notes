@@ -30,3 +30,119 @@ Pendigits 6: 0.970160116448326
 Pendigits 7: 0.9708879184861717
 Pendigits 8: 0.9741630276564774
 Pendigits 9: 0.9741630276564774
+
+***************************************
+KNN - Pendigits 'distance'
+Diamonds
+k.38:auto:Diamonds:0.5279199110122358
+Pendigits
+k.10:auto:Pendigits:0.9909024745269287
+
+k.38:canberra:Diamonds:0.6253615127919911
+k.38:canberra:Diamonds:0.6341119762699295 with "cut", "table", and "depth" removed
+
+With the diamonds datasets suspecting that we do not have enough data for the columns present so I began investigating
+removing columns to reduce the data needed to fully generalize.  The improvements wer small but present.
+
+Diamonds
+k.38:canberra:Diamonds:0.6253615127919911
+  k.38:canberra:-carat:Diamonds:0.6065257693733779
+  k.38:canberra:-cut:Diamonds:0.6327030033370411
+  k.38:canberra:-color:Diamonds:0.5174638487208009
+  k.38:canberra:-clarity:Diamonds:0.46955876900259547
+  k.38:canberra:-depth:Diamonds:0.6271412680756396
+  k.38:canberra:-table:Diamonds:0.6298850574712643
+  k.38:canberra:-x:Diamonds:0.6240266963292548
+  k.38:canberra:-y:Diamonds:0.6236559139784946
+  k.38:canberra:-z:Diamonds:0.624842417500927
+Pendigits
+k.10:euclidean:Pendigits:0.9909024745269287
+  k.10:euclidean:-X1:Pendigits:0.990174672489083
+  k.10:euclidean:-Y1:Pendigits:0.9879912663755459
+  k.10:euclidean:-X2:Pendigits:0.9883551673944687
+  k.10:euclidean:-Y2:Pendigits:0.9894468704512372
+  k.10:euclidean:-X3:Pendigits:0.9894468704512372
+  k.10:euclidean:-Y3:Pendigits:0.9879912663755459
+  k.10:euclidean:-X4:Pendigits:0.9890829694323144
+  k.10:euclidean:-Y4:Pendigits:0.9894468704512372
+  k.10:euclidean:-X5:Pendigits:0.992721979621543
+  k.10:euclidean:-Y5:Pendigits:0.9887190684133915
+  k.10:euclidean:-X6:Pendigits:0.9898107714701602
+  k.10:euclidean:-Y6:Pendigits:0.9905385735080058
+  k.10:euclidean:-X7:Pendigits:0.9909024745269287
+  k.10:euclidean:-Y7:Pendigits:0.9898107714701602
+  k.10:euclidean:-X8:Pendigits:0.9879912663755459
+  k.10:euclidean:-Y8:Pendigits:0.9905385735080058
+
+Diamonds
+k.38:canberra:Diamonds:0.6341119762699295
+Pendigits
+k.10:euclidean:Pendigits:0.992721979621543
+
+*********************************************
+ANN - Discuss the hidden layers, and activation.
+Just defaults
+Diamonds: 0.6079347423062662
+Pendigits: 0.987627365356623
+Grid Search for activation function
+starting on Diamonds
+{'activation': 'logistic', 'max_iter': 700}
+Diamonds: 0.6131998516870597
+starting on Pendigits
+{'activation': 'logistic', 'max_iter': 700}
+Pendigits: 0.9919941775836972
+
+starting on Diamonds
+Diamonds: 0.62165368928439
+        clf = MLPClassifier(activation='logistic', max_iter=1000)
+
+with 1000 max_iterations
+starting on Diamonds
+Diamonds: 0.6185391175380052
+starting on Pendigits
+Pendigits: 0.99235807860262
+
+learning_rate test -
+starting on Diamonds
+ 284.93204736709595 -constant:0.0008 - 0.6150537634408603
+ 153.14252305030823 -constant:0.001822222222222222 - 0.6051909529106414
+ 125.51938247680664 -constant:0.002844444444444444 - 0.6037819799777531
+ 130.78072261810303 -constant:0.0038666666666666663 - 0.6060066740823137
+ 126.0894033908844 -constant:0.004888888888888889 - 0.603485354097145
+ 108.55323886871338 -constant:0.005911111111111111 - 0.5969595847237672
+ 125.53900647163391 -constant:0.006933333333333333 - 0.5807193177604746
+ 91.44395518302917 -constant:0.007955555555555554 - 0.5759733036707453
+ 70.33260869979858 -constant:0.008977777777777777 - 0.5777530589543938
+ 55.10443687438965 -constant:0.01 - 0.5724137931034483
+
+
+Options to experiment with
+             hidden_layer_sizes: Any = (100,),
+             activation: Any = "relu", - logistic seems best
+             learning_rate: Any = ["constant", "invscaling"]
+             learning_rate_init: Any = 0.001,
+             warm_start: Any = False,
+
+starting on Diamonds
+ 125.41288304328918 - :0.0001 - 0.503819058212829
+ 129.74292516708374 - :0.0002555555555555556 - 0.5432703003337042
+ 142.48431015014648 - :0.0004111111111111111 - 0.5598813496477568
+ 151.38944673538208 - :0.0005666666666666667 - 0.571449758991472
+ 129.21724677085876 - :0.0007222222222222223 - 0.5793845012977382
+ 121.9523241519928 - :0.0008777777777777779 - 0.5863552094920281
+ 123.8665680885315 - :0.0010333333333333334 - 0.5904338153503893
+ 89.45388078689575 - :0.001188888888888889 - 0.5813867259918428
+
+********************************************
+SVM
+Just with a kernel gridsearch
+Diamonds::{'kernel': 'linear'}: 0.5593622543566926 / 0.5612408849338771
+Pendigits::{'kernel': 'poly'}: 0.9938136826783115 / 0.9981804949053857
+
+Poly fit check
+Checking up to 5
+ fitting to get scores
+Diamonds::{'degree': 4}: 0.45443084909158327 / 0.45388703497713506
+Checking up to 10
+ fitting to get scores
+Pendigits::{'degree': 3}: 0.9938136826783115 / 0.9981804949053857

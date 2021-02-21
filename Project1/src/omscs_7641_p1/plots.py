@@ -14,6 +14,8 @@ def draw_learning_curve(clf, test_X, test_Y, title='Tree', folds=10):
 
     axes = plt.subplot()
     axes.set_title(f"Learning Curve {title}")
+    axes.set_xlabel('Sample Count')
+    axes.set_ylabel('Accuracy')
     axes.grid()
     axes.fill_between(train_sizes, train_scores_mean - train_scores_std,
                             train_scores_mean + train_scores_std, alpha=0.1,
