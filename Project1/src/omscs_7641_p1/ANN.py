@@ -106,7 +106,7 @@ def explore_hidden_layers(train_X, test_X, train_Y, test_Y, dataset_name, params
         print(f' {time() - start} - :{layer_size} - {clf.score(test_X, test_Y)}')
 
     axes = plt.subplot()
-    axes.set_title(f"ANN Learning Rates {dataset_name}")
+    axes.set_title(f"ANN Hidden Layes Sizes {dataset_name}")
     axes.set_xlabel("Hidden Layer Size")
     axes.set_ylabel("Accuracy")
 
@@ -143,17 +143,17 @@ def main():
         print(f"starting on {dataset_name}")
 
         if dataset_name == 'Pendigits':
-            # build_complexity_graph(train_X, test_X, train_Y, test_Y, dataset_name, {'max_iter': 10})
-            # explore_learning_rate(train_X, test_X, train_Y, test_Y, dataset_name, {'max_iter': 400})
-            # explore_hidden_layers(train_X, test_X, train_Y, test_Y, dataset_name, {'max_iter': 400})
-            draw_learning_curve(MLPClassifier(max_iter=400, activation='logistic'),
-                                test_X, test_Y, f"ANN {dataset_name}")
+            build_complexity_graph(train_X, test_X, train_Y, test_Y, dataset_name, {'max_iter': 10})
+            explore_learning_rate(train_X, test_X, train_Y, test_Y, dataset_name, {'max_iter': 400})
+            explore_hidden_layers(train_X, test_X, train_Y, test_Y, dataset_name, {'max_iter': 500})
+            draw_learning_curve(MLPClassifier(max_iter=500, activation='logistic'),
+                                test_X, test_Y, f"ANN {dataset_name}", 5)
         else:
-            # build_complexity_graph(train_X, test_X, train_Y, test_Y, dataset_name)
-            # explore_learning_rate(train_X, test_X, train_Y, test_Y, dataset_name, {'max_iter': 1100})
-            # explore_hidden_layers(train_X, test_X, train_Y, test_Y, dataset_name, {'max_iter': 1100})
+            build_complexity_graph(train_X, test_X, train_Y, test_Y, dataset_name)
+            explore_learning_rate(train_X, test_X, train_Y, test_Y, dataset_name, {'max_iter': 1100})
+            explore_hidden_layers(train_X, test_X, train_Y, test_Y, dataset_name, {'max_iter': 1100})
             draw_learning_curve(MLPClassifier(max_iter=800, activation='logistic'),
-                                test_X, test_Y, f"ANN {dataset_name}")
+                                test_X, test_Y, f"ANN {dataset_name}", 5)
 
 
 
