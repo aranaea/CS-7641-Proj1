@@ -175,7 +175,6 @@ def main():
     for dataset_name, load_dataset in [
                                        ('Pendigits', load_pendigits),
                                        ('Diamonds', load_diamonds),
-                                       # ('CC Defaults', load_ccdefaults),
                                        ]:
 
         print(f'Processing {dataset_name}')
@@ -186,8 +185,6 @@ def main():
         print("Initial score: ", end='')
         clf = DecisionTreeClassifier(max_depth=5, random_state=42)
         clf.fit(train_X, train_Y)
-        plot_tree(clf)
-        plt.show()
         plot_confusion_matrix(clf, test_X, test_Y, include_values=False)
         plt.show()
         predictions = clf.predict(test_X)
@@ -200,8 +197,6 @@ def main():
         clf = DecisionTreeClassifier(**params)
         clf.fit(train_X, train_Y)
         predictions = clf.predict(test_X)
-        plot_tree(clf)
-        plt.show()
         print(accuracy_score(test_Y, predictions))
 
         # if dataset_name == "CC Defaults":
@@ -215,8 +210,6 @@ def main():
         clf = DecisionTreeClassifier(**params)
         clf.fit(train_X, train_Y)
         predictions = clf.predict(test_X)
-        plot_tree(clf)
-        plt.show()
         print(accuracy_score(test_Y, predictions))
 
         model_complexity_graph(train_X, train_Y, params.copy(), dataset_name)
@@ -224,8 +217,6 @@ def main():
         print(f"Best we could find for {dataset_name} is {params}")
         clf = DecisionTreeClassifier(**params)
         clf.fit(train_X, train_Y)
-        plot_tree(clf)
-        plt.show()
         plot_confusion_matrix(clf, test_X, test_Y, include_values=False)
         plt.show()
         #
