@@ -1,0 +1,32 @@
+Diamonds decision tree complexity and pruning test:
+max: 2 actual: 2
+max: 5 actual: 5
+max: 8 actual: 8
+max: 12 actual: 12
+max: 15 actual: 15
+max: 18 actual: 18
+max: 22 actual: 18
+max: 25 actual: 18
+max: 28 actual: 18
+max: 32 actual: 18
+Best we could find for Diamonds is {'criterion': 'entropy', 'max_depth': 25, 'random_state': 42, 'ccp_alpha': 0.00025940757883160853}
+0.6152762328513163
+
+I think the plot of test accuracy is just hard to see because of the plotting of the training accuracy.
+
+Boosting Experiments:
+  1. Increase the number of estimators
+  2. Weaken the learners (but not too much)
+
+Fix the decision tree plots
+
+Boosting - Pendigits did actually get better
+Pendigits 1: 0.9617903930131004
+Pendigits 2: 0.9588791848617176
+Pendigits 3: 0.9734352256186317
+Pendigits 4: 0.9705240174672489
+Pendigits 5: 0.972707423580786
+Pendigits 6: 0.970160116448326
+Pendigits 7: 0.9708879184861717
+Pendigits 8: 0.9741630276564774
+Pendigits 9: 0.9741630276564774

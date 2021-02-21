@@ -1,5 +1,5 @@
 from typing import Tuple
-from random import shuffle
+from time import time
 
 import numpy as np
 import pandas as pd
@@ -7,17 +7,16 @@ import matplotlib.pyplot as plt
 
 from sklearn.metrics import accuracy_score, plot_confusion_matrix, plot_roc_curve
 from sklearn.model_selection import GridSearchCV, train_test_split, learning_curve
-from sklearn.tree import DecisionTreeClassifier, plot_tree
-from sklearn.preprocessing import normalize
+from sklearn.tree import DecisionTreeClassifier, plot_tree, export_graphviz
 
-from omscs_7641_p1.datasets import load_pendigits, load_ccdefaults, load_mushrooms, load_heartfailure
+from omscs_7641_p1.datasets import load_pendigits, load_ccdefaults, load_diamonds
+from omscs_7641_p1.plots import draw_learning_curve
 
 
 def grid_search(train_X, train_Y):
     tuning_params = [{'criterion': ['gini', 'entropy'],
                       'max_depth': np.linspace(2, 32, 10, dtype=int),
-                      'random_state': [42],
-                      'min_samples_split': np.linspace(2, 100, 50, dtype=int)}]
+                      'random_state': [42]}]
     scoring = 'accuracy'
 
     clf = GridSearchCV(DecisionTreeClassifier(), tuning_params, scoring=scoring)
@@ -32,9 +31,13 @@ def model_complexity_graph(train_X, train_Y, params, title='depth study'):
         params['max_depth'] = depth
         clf = DecisionTreeClassifier(**params)
 
-        train_sizes, train_scores, test_scores = learning_curve(clf, train_X, train_Y, cv=5, n_jobs=3)
+        train_sizes, train_scores, test_scores = learning_curve(clf, train_X, train_Y, cv=10, n_jobs=3)
+        clf.fit(train_X, train_Y)
+        print(f"max: {depth} actual: {clf.get_depth()} score: {np.mean(test_scores)}")
         scores.append([depth, np.mean(train_scores), np.std(train_scores), np.mean(test_scores),
                        np.std(test_scores)])
+        if depth != clf.get_depth():
+            break
 
     scores = np.array(scores)
 
@@ -57,24 +60,53 @@ def pruning_check(features, labels, params, title='depth study'):
     scores = []
 
     base_clf = DecisionTreeClassifier(**params)
-    train_X, test_X, train_Y, test_Y = train_test_split(features, labels, random_state=42)
+    # train_X, test_X, train_Y, test_Y = train_test_split(features, labels, random_state=42)
 
     path = base_clf.cost_complexity_pruning_path(features, labels)
 
-    alphas = sorted(path.ccp_alphas, reverse=True)
-    print(len(alphas))
-    for ccp_alpha in alphas:
-        print('.', end='')
+    alphas = sorted(path.ccp_alphas, reverse=False)
+    alphas = alphas[:-int(len(alphas) * 0.01)]
+    print("alpha count:", len(alphas))
+    print(f"{alphas[0]} - {alphas[-1]}")
+    pruning_round = 0
+    accuracy = None
+    for alpha_index in range(0, len(alphas), len(alphas) // 25):
+        start = time()
+        ccp_alpha = alphas[alpha_index]
+        if ccp_alpha > 0.0009:
+            break
         # print(f'processing {ccp_alpha}')
         params['ccp_alpha'] = ccp_alpha
         clf = DecisionTreeClassifier(**params)
 
         train_sizes, train_scores, test_scores = learning_curve(clf, features, labels, cv=10, n_jobs=3)
-        # clf.fit(train_X, train_Y)
-        # node_count = clf.tree_.node_count
-        # print(node_count)
+
+        round_accuracy = np.mean(test_scores)
+        if accuracy is not None:
+            if round_accuracy == accuracy:
+                print(".", end='')
+                continue  # only do stuff when the scores change
+            elif round_accuracy < accuracy:
+                print('- ', end='')
+                accuracy = round_accuracy
+                pruning_round += 1
+                # if pruning_round >= 10:
+                #     break
+            else:
+                print('+', end='')
+                accuracy = round_accuracy
+                pruning_round = 0
+        else:
+            accuracy = round_accuracy
+            print('+', end='')
+
+        print(f"{ccp_alpha}: {round_accuracy} ", end='')
+
         scores.append([ccp_alpha, np.mean(train_scores), np.std(train_scores), np.mean(test_scores),
                        np.std(test_scores)])
+        print(f"{time() - start}s")
+
+        # print('.', end='')
     print('')
 
     scores = np.array(scores)
@@ -85,10 +117,22 @@ def pruning_check(features, labels, params, title='depth study'):
     axes.set_ylabel('Accuracy')
     axes.set_title(f"Pruning Alpha {title}")
     axes.grid()
-    axes.fill_between(x_axis, scores[:, 1] - scores[:, 2], scores[:, 1] + scores[:, 2], alpha=0.1, color="r")
+    # axes.fill_between(x_axis, scores[:, 1] - scores[:, 2], scores[:, 1] + scores[:, 2], alpha=0.1, color="r")
     axes.fill_between(x_axis, scores[:, 3] - scores[:, 4], scores[:, 3] + scores[:, 4], alpha=0.1, color="g")
-    axes.plot(x_axis, scores[:, 1], 'o-', color="r", label="Training Score")
+    # axes.plot(x_axis, scores[:, 1], 'o-', color="r", label="Training Score")
     axes.plot(x_axis, scores[:, 3], 'o-', color="g", label="Validation Score")
+    axes.legend(loc="best")
+    plt.show()
+
+    axes = plt.subplot()
+    axes.set_xlabel('Alpha Prune')
+    axes.set_ylabel('Accuracy')
+    axes.set_title(f"Pruning Alpha {title}")
+    axes.grid()
+    axes.fill_between(x_axis, scores[:, 1] - scores[:, 2], scores[:, 1] + scores[:, 2], alpha=0.1, color="r")
+    # axes.fill_between(x_axis, scores[:, 3] - scores[:, 4], scores[:, 3] + scores[:, 4], alpha=0.1, color="g")
+    axes.plot(x_axis, scores[:, 1], 'o-', color="r", label="Training Score")
+    # axes.plot(x_axis, scores[:, 3], 'o-', color="g", label="Validation Score")
     axes.legend(loc="best")
     plt.show()
 
@@ -108,30 +152,6 @@ def larger_tree_with_pruning(features, labels, params, dataset_name):
         print(f'depth: {depth}')
         temp_params['max_depth'] = depth
         pruning_check(features, labels, temp_params, f"{dataset_name} at {depth}")
-
-
-def draw_learning_curve(clf, test_X, test_Y, title='Tree'):
-    train_sizes, train_scores, test_scores, fit_times, _ = learning_curve(clf, test_X, test_Y,
-                                                                          cv=10, n_jobs=3, return_times=True)
-    train_scores_mean = np.mean(train_scores, axis=1)
-    train_scores_std = np.std(train_scores, axis=1)
-    test_scores_mean = np.mean(test_scores, axis=1)
-    test_scores_std = np.std(test_scores, axis=1)
-
-    axes = plt.subplot()
-    axes.set_title(f"Learning Curve {title}")
-    axes.grid()
-    axes.fill_between(train_sizes, train_scores_mean - train_scores_std,
-                            train_scores_mean + train_scores_std, alpha=0.1,
-                            color="r")
-    axes.fill_between(train_sizes, test_scores_mean - test_scores_std,
-                            test_scores_mean + test_scores_std, alpha=0.1,
-                            color="g")
-    axes.plot(train_sizes, train_scores_mean, 'o-', color="r", label="Training score")
-    axes.plot(train_sizes, test_scores_mean, 'o-', color="g", label="Cross-validation score")
-    axes.legend(loc="best")
-
-    plt.show()
 
 
 def create_balance(features: pd.DataFrame, labels: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -154,7 +174,8 @@ def main():
 
     for dataset_name, load_dataset in [
                                        ('Pendigits', load_pendigits),
-                                       ('CC Defaults Norm', load_ccdefaults)
+                                       ('Diamonds', load_diamonds),
+                                       # ('CC Defaults', load_ccdefaults),
                                        ]:
 
         print(f'Processing {dataset_name}')
@@ -167,7 +188,7 @@ def main():
         clf.fit(train_X, train_Y)
         plot_tree(clf)
         plt.show()
-        plot_confusion_matrix(clf, test_X, test_Y)
+        plot_confusion_matrix(clf, test_X, test_Y, include_values=False)
         plt.show()
         predictions = clf.predict(test_X)
         print(accuracy_score(test_Y, predictions))
@@ -185,7 +206,9 @@ def main():
 
         # if dataset_name == "CC Defaults":
         #     features = normalize(features)
-
+        # params = {'criterion': 'entropy', 'max_depth': 12, 'random_state': 42}
+        # params = {'criterion': 'entropy', 'max_depth': 25, 'random_state': 42}
+        params['max_depth'] *= 2
         params['ccp_alpha'] = pruning_check(train_X, train_Y, params.copy(), dataset_name)
 
         print("After prune score: ", end='')
@@ -203,13 +226,17 @@ def main():
         clf.fit(train_X, train_Y)
         plot_tree(clf)
         plt.show()
-        plot_confusion_matrix(clf, test_X, test_Y)
+        plot_confusion_matrix(clf, test_X, test_Y, include_values=False)
         plt.show()
         #
         draw_learning_curve(clf, test_X, test_Y, dataset_name)
 
         predictions = clf.predict(test_X)
         print(accuracy_score(test_Y, predictions))
+
+        export_graphviz(clf, out_file=f'{dataset_name.replace(" ", "_")}.dot',
+                        feature_names=features.columns,
+                        filled=True)
         try:
             plot_roc_curve(clf, test_X, test_Y)
             plt.show()

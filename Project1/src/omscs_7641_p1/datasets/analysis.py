@@ -8,7 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import completeness_score, homogeneity_score
 
-from omscs_7641_p1.datasets import load_pendigits, load_ccdefaults
+from omscs_7641_p1.datasets import load_pendigits, load_diamonds
 
 
 def categorical_distance(features, labels):
@@ -40,7 +40,7 @@ def draw_histogram(labels, title):
 
 def main():
     for dataset_name, load_dataset in [('Pendigits', load_pendigits),
-                                       ('CC Defaults', load_ccdefaults)]:
+                                       ('Diamonds', load_diamonds)]:
         features, labels = load_dataset()
         label_counts = labels.value_counts()
         draw_histogram(labels, dataset_name)
